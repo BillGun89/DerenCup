@@ -581,6 +581,35 @@
     line-height:1;
   }
   .tab-delete:hover{opacity:1;}
+  .totals-title{
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--ink-soft);
+  margin:16px 0 8px;
+}
+.totals-bar{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px 8px;
+  display:flex;
+}
+.totals-item{
+  flex:1;
+  text-align:center;
+}
+.totals-num{
+  font-family:'Noto Sans';
+  font-weight:800;
+  font-size:21px;
+  color:var(--blue-deep);
+  font-variant-numeric:tabular-nums;
+}
+.totals-lbl{
+  font-size:11px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
 </style>
 </head>
 <body>
@@ -611,12 +640,17 @@
     </div>
     <div class="hero-title" id="heroAgeLabel">7 нас</div>
     <div class="hero-scoreline">
-      <div class="hero-stat"><div class="num" id="statMatches">0</div><div class="lbl">тоглосон тоглолт</div></div>
+      <div class="hero-stat"><div class="num" id="statMatches">0</div><div class="lbl">тоглолт</div></div>
       <div class="hero-stat"><div class="num" id="statGoals">0</div><div class="lbl">оруулсан гоол</div></div>
       <div class="hero-stat"><div class="num" id="statTeams">0</div><div class="lbl">хэсгийн баг</div></div>
     </div>
   </div>
-
+  <div class="totals-title">Тэмцээнд оролож буй нийт баг</div>
+<div class="totals-bar">
+  <div class="totals-item"><div class="totals-num" id="totalTeamsStat">0</div><div class="totals-lbl">нийт баг</div></div>
+  <div class="totals-item"><div class="totals-num" id="totalMatchesStat">0</div><div class="totals-lbl">тоглосон тоглолт</div></div>
+  <div class="totals-item"><div class="totals-num" id="totalGoalsStat">0</div><div class="totals-lbl">нийт гоол</div></div>
+</div>
   <div class="selector-block">
     <div class="selector-title">Насны ангиллаа сонгоно уу</div>
     <div class="pill-row" id="ageRow"></div>
@@ -1115,6 +1149,15 @@ function renderScorers(view){
   });
   document.getElementById("scorersMeta").textContent = "Шилдэг " + top.length;
 }
+function renderTotalsBar(){
+  const totalTeams = RAW.teams.length;
+  const playedMatches = RAW.matches.filter(m => m.played);
+  const totalMatches = playedMatches.length;
+  const totalGoals = playedMatches.reduce((s,m) => s + m.home_score + m.away_score, 0);
+  document.getElementById("totalTeamsStat").textContent = totalTeams;
+  document.getElementById("totalMatchesStat").textContent = totalMatches;
+  document.getElementById("totalGoalsStat").textContent = totalGoals;
+}
 
 function renderAll(){
   if(!loaded){
@@ -1125,6 +1168,7 @@ function renderAll(){
   renderTabs();
   const view = currentGroupView();
   renderHero(view);
+  renderTotalsBar();
   renderStandings(view);
   renderMatches(view);
   renderScorers(view);
