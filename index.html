@@ -47,8 +47,6 @@
   }
   a{color:inherit;}
   button{font-family:inherit;}
-
-  /* ---------- Header ---------- */
   header.site{
     background:var(--blue-deep);
     padding:18px 0 22px;
@@ -80,8 +78,6 @@
     margin-top:2px;
     font-weight:500;
   }
-
-  /* ---------- Hero / scoreboard ---------- */
   .hero{
     margin-top:16px;
     background:linear-gradient(135deg,var(--blue) 0%, var(--blue-deep) 100%);
@@ -146,8 +142,6 @@
     color:#CFE0F7;
     margin-top:1px;
   }
-
-  /* ---------- Selectors ---------- */
   .selector-block{margin-top:22px;}
   .selector-title{
     font-size:13px;
@@ -186,7 +180,6 @@
     background:var(--red);
     border-color:var(--red);
   }
-
   .tab-row{
     display:flex;
     gap:4px;
@@ -211,8 +204,6 @@
     color:var(--white);
   }
   .tab:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
-
-  /* ---------- Section headers ---------- */
   .section{margin-top:26px;}
   .section-head{
     display:flex;
@@ -230,8 +221,6 @@
     color:var(--ink-soft);
     font-weight:500;
   }
-
-  /* ---------- Standings table ---------- */
   .table-card{
     background:var(--white);
     border-radius:14px;
@@ -273,8 +262,6 @@
     font-weight:700;
   }
   .pos-cell{width:22px;}
-
-  /* ---------- Match cards ---------- */
   .matchday-label{
     font-size:12.5px;
     font-weight:700;
@@ -338,8 +325,6 @@
   .scorers .side.away{justify-content:flex-start; flex:1; text-align:left;}
   .scorers b{color:var(--ink); font-weight:600;}
   .no-goals{color:#A6ADB8; font-style:normal;}
-
-  /* ---------- Top scorers ---------- */
   .scorer-list{
     background:var(--white);
     border:1px solid var(--line);
@@ -389,14 +374,12 @@
     color:var(--ink-soft);
     margin-left:2px;
   }
-
   .empty-note{
     color:var(--ink-soft);
     font-size:13.5px;
     padding:18px 14px;
     text-align:center;
   }
-
   footer.site{
     margin-top:34px;
     text-align:center;
@@ -405,13 +388,10 @@
     line-height:1.6;
   }
   footer.site strong{color:var(--ink);}
-
   @media (min-width:600px){
     .wrap{max-width:640px;}
     .hero-title{font-size:24px;}
   }
-
-  /* ---------- Admin UI ---------- */
   .admin-toggle{
     background:rgba(255,255,255,0.14);
     border:1px solid rgba(255,255,255,0.25);
@@ -424,7 +404,6 @@
     flex:none;
   }
   .admin-toggle:hover{background:rgba(255,255,255,0.22);}
-
   .admin-bar{
     margin-top:16px;
     background:var(--gold);
@@ -450,7 +429,6 @@
     cursor:pointer;
     flex:none;
   }
-
   .panel-card{
     background:var(--white);
     border:1px solid var(--line);
@@ -485,7 +463,6 @@
   .field input:focus, .field select:focus{outline:2px solid var(--blue); outline-offset:1px;}
   .field-row{display:flex; gap:10px;}
   .field-row .field{flex:1;}
-
   .btn-primary{
     background:var(--blue);
     color:var(--white);
@@ -512,7 +489,6 @@
   }
   .error-msg{color:var(--loss); font-size:12.5px; margin-top:8px;}
   .ok-msg{color:var(--win); font-size:12.5px; margin-top:8px;}
-
   .team-admin-row{
     display:flex;
     align-items:center;
@@ -532,7 +508,6 @@
     cursor:pointer;
     padding:2px 6px;
   }
-
   .scorer-input-row{
     display:flex;
     flex-wrap:wrap;
@@ -552,7 +527,6 @@
   .scorer-input-row .rowCustomName{flex:1 1 120px; min-width:100px;}
   .scorer-input-row .rowGoals{width:52px; flex:none;}
   .scorer-input-row .rowRemove{flex:none;}
-
   .match-card{position:relative;}
   .match-delete{
     position:absolute;
@@ -567,7 +541,6 @@
     padding:2px 4px;
   }
   .match-delete:hover{color:var(--loss);}
-
   .loading-note{
     text-align:center;
     color:var(--ink-soft);
@@ -705,11 +678,6 @@
 </div>
 
 <script>
-/* ============================================================
-   SUPABASE ТОХИРГОО
-   Supabase дээр төслөө үүсгээд Project Settings → API хэсгээс
-   энэ хоёр утгыг олж, доор оруулна:
-   ============================================================ */
 const SUPABASE_URL = "https://iacmgqwbbdxwpwfgwwdg.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhY21ncXdiYmR4d3B3Zmd3d2RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MTQ1NTQsImV4cCI6MjEwNDI5MDU1NH0.cZ6ooL2LIdL_Q8YlH7F9iIArsZ2aTxpKAOpDe1QZvtY";
 
@@ -717,20 +685,15 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SEASON_LABEL = "Дэрэн цом 2026";
 
-/* ============================================================
-   STATE
-   ============================================================ */
 let RAW = { ageGroups: [], groups: [], teams: [], players: [], matches: [], goals: [] };
 let state = { ageId: null, groupId: null };
 let session = null;
 let loaded = false;
 let recordingMatchId = null;
+let editingDateId = null;
 let teamPanelOpen = false;
 let teamPanelExpandedId = null;
 
-/* ============================================================
-   DATA LOADING
-   ============================================================ */
 async function loadAll(){
   const [ag, gr, tm, pl, mt, gl] = await Promise.all([
     sb.from("age_groups").select("*").order("sort_order"),
@@ -769,7 +732,6 @@ function teamName(id){
   return (RAW.teams.find(t=>t.id===id) || {}).name || "?";
 }
 
-// Байгуулдаг: сонгосон хэсгийн матч+гоолын мэдээллийг рендерт бэлэн хэлбэрт оруулна
 function groupView(groupId){
   const teams = RAW.teams.filter(t => t.group_id === groupId);
   const matches = RAW.matches
@@ -789,6 +751,7 @@ function groupView(groupId){
         homeTeamId: m.home_team_id, awayTeamId: m.away_team_id,
         homeScore: m.home_score, awayScore: m.away_score,
         played: m.played,
+        matchAt: m.match_at,
         scorers
       };
     });
@@ -809,11 +772,19 @@ function playersOfTeam(teamId){
   return RAW.players.filter(p => p.team_id === teamId);
 }
 
-/* ============================================================
-   Хуваалцсан "гоол оруулсан тоглогч" мөр — Тоглолт нэмэх болон
-   Дүн оруулах формуудад ижил ашиглагдана. Тухайн багийн бүртгэлтэй
-   тоглогчдоос сонгох, эсвэл "Бусад" сонгож нэрийг гараар бичих.
-   ============================================================ */
+function formatDateTime(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function toDatetimeLocal(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function buildScorerRow(container, homeId, homeName, awayId, awayName){
   const row = document.createElement("div");
   row.className = "scorer-input-row";
@@ -878,11 +849,9 @@ function readScorerRows(container, homeId, awayId){
   return goalsToInsert;
 }
 
-// Дугуй систем (round-robin): багуудыг хос болгон, бүх багийг бие биетэйгээ
-// нэг л удаа тоглуулах хуваарийг тойрог (matchday) бүрээр хуваарилж үүсгэнэ.
 function generateRoundRobin(teamIds){
   let ids = teamIds.slice();
-  if(ids.length % 2 !== 0) ids.push(null); // тэгш бус тохиолдолд амралт
+  if(ids.length % 2 !== 0) ids.push(null);
   const n = ids.length;
   const rounds = n - 1;
   const half = n / 2;
@@ -932,9 +901,6 @@ function computeScorers(view){
   return Object.values(players).sort((a,b) => b.goals - a.goals).slice(0,8);
 }
 
-/* ============================================================
-   RENDER — нийтийн хэсэг
-   ============================================================ */
 function renderPills(){
   const row = document.getElementById("ageRow");
   row.innerHTML = "";
@@ -1073,17 +1039,45 @@ function renderMatches(view){
             await loadAll();
             renderAll();
           });
-          return; // skip the normal card markup below for this match
+          return;
+        }
+
+        if(editingDateId === m.id){
+          card.innerHTML = `
+            <h3 style="margin-bottom:10px;">${m.home} – ${m.away}</h3>
+            <div class="field">
+              <label>Огноо, цаг</label>
+              <input type="datetime-local" id="dateEditInput" value="${toDatetimeLocal(m.matchAt)}">
+            </div>
+            <button class="btn-primary" id="dateSaveBtn">Хадгалах</button>
+            <button class="btn-secondary" id="dateCancelBtn" style="margin-top:8px; border-style:solid;">Цуцлах</button>`;
+          list.appendChild(card);
+
+          document.getElementById("dateCancelBtn").addEventListener("click", () => {
+            editingDateId = null;
+            renderAll();
+          });
+          document.getElementById("dateSaveBtn").addEventListener("click", async () => {
+            const val = document.getElementById("dateEditInput").value;
+            const iso = val ? new Date(val).toISOString() : null;
+            await sb.from("matches").update({ match_at: iso }).eq("id", m.id);
+            editingDateId = null;
+            await loadAll();
+            renderAll();
+          });
+          return;
         }
 
         if(!m.played){
           card.innerHTML = `
+            ${session ? `<button class="btn-mini" data-date-edit="${m.id}" style="position:absolute; top:8px; right:34px; font-size:11px; padding:4px 7px;" title="Огноо тохируулах">📅</button>` : ""}
             ${session ? `<button class="match-delete" data-id="${m.id}" title="Устгах">✕</button>` : ""}
             <div class="match-teams">
               <div class="team home">${m.home}</div>
               <div class="score-box" style="background:var(--ink-soft); font-size:13px; font-weight:600;">товлогдсон</div>
               <div class="team away">${m.away}</div>
             </div>
+            ${m.matchAt ? `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-top:6px;">${formatDateTime(m.matchAt)}</div>` : ""}
             ${session
               ? `<button class="btn-secondary" data-record="${m.id}" style="margin:10px 0 0;">Дүн оруулах</button>`
               : `<div class="scorers"><span class="no-goals">Тоглогдоогүй</span></div>`}
@@ -1095,12 +1089,14 @@ function renderMatches(view){
         const homeScorers = m.scorers.filter(s=>s.side==="home");
         const awayScorers = m.scorers.filter(s=>s.side==="away");
         card.innerHTML = `
+          ${session ? `<button class="btn-mini" data-date-edit="${m.id}" style="position:absolute; top:8px; right:34px; font-size:11px; padding:4px 7px;" title="Огноо тохируулах">📅</button>` : ""}
           ${session ? `<button class="match-delete" data-id="${m.id}" title="Устгах">✕</button>` : ""}
           <div class="match-teams">
             <div class="team home">${m.home}</div>
             <div class="score-box">${m.homeScore}<span class="dash">–</span>${m.awayScore}</div>
             <div class="team away">${m.away}</div>
           </div>
+          ${m.matchAt ? `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-top:4px;">${formatDateTime(m.matchAt)}</div>` : ""}
           <div class="scorers">
             <div class="side home">${homeScorers.length ? homeScorers.map(s=>`<span><b>${s.name}</b>${s.goals>1 ? " ("+s.goals+")" : ""}</span>`).join("") : '<span class="no-goals">—</span>'}</div>
             <div class="side away">${awayScorers.length ? awayScorers.map(s=>`<span><b>${s.name}</b>${s.goals>1 ? " ("+s.goals+")" : ""}</span>`).join("") : '<span class="no-goals">—</span>'}</div>
@@ -1113,6 +1109,12 @@ function renderMatches(view){
   const scheduledCount = view.matches.length - playedCount;
   document.getElementById("matchesMeta").textContent = playedCount + " тоглосон" + (scheduledCount ? " · " + scheduledCount + " товлогдсон" : "");
 
+  list.querySelectorAll("[data-date-edit]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      editingDateId = btn.dataset.dateEdit;
+      renderAll();
+    });
+  });
   list.querySelectorAll(".match-delete").forEach(btn => {
     btn.addEventListener("click", async () => {
       if(!confirm("Энэ тоглолтыг устгах уу?")) return;
@@ -1177,9 +1179,6 @@ function renderAll(){
   renderAdminControls(view);
 }
 
-/* ============================================================
-   ADMIN — нэвтрэх, гарах
-   ============================================================ */
 function renderAdminArea(){
   const el = document.getElementById("adminArea");
   const toggleBtn = document.getElementById("adminToggleBtn");
@@ -1232,7 +1231,7 @@ function renderLoginPanel(){
 }
 
 document.getElementById("adminToggleBtn").addEventListener("click", () => {
-  if(session) return; // нэвтэрсэн үед энэ товч бус admin-bar доторх "Гарах" товч ажиллана
+  if(session) return;
   const el = document.getElementById("adminArea");
   if(el.dataset.open === "1"){
     el.innerHTML = "";
@@ -1243,9 +1242,6 @@ document.getElementById("adminToggleBtn").addEventListener("click", () => {
   }
 });
 
-/* ============================================================
-   ADMIN — хэсэг (групп) нэмэх
-   ============================================================ */
 function renderGroupAdminControls(){
   const box = document.getElementById("groupAdminControls");
   if(!session || !state.ageId){
@@ -1288,9 +1284,6 @@ function renderGroupAdminControls(){
   });
 }
 
-/* ============================================================
-   ADMIN — баг + тоглогчдын бүртгэл
-   ============================================================ */
 function renderTeamPanel(teamBox, view){
   teamBox.innerHTML = `
     <div class="panel-card">
@@ -1399,9 +1392,6 @@ function attachTeamRowHandlers(teamBox){
   });
 }
 
-/* ============================================================
-   ADMIN — лаг, тоглолт удирдах хэсгүүд
-   ============================================================ */
 function renderAdminControls(view){
   const teamBox = document.getElementById("teamAdminControls");
   const matchBox = document.getElementById("matchAdminControls");
@@ -1412,7 +1402,6 @@ function renderAdminControls(view){
     return;
   }
 
-  // ---- Лаг нэмэх (тоглогчидтой) ----
   if(teamPanelOpen){
     renderTeamPanel(teamBox, view);
   } else {
@@ -1423,7 +1412,6 @@ function renderAdminControls(view){
     });
   }
 
-  // ---- Тоглолт нэмэх / автоматжуулалт ----
   const stage = currentGroupRow().stage || "group";
   let extraButtons = "";
   if(stage === "group"){
@@ -1531,6 +1519,10 @@ function renderAdminControls(view){
           <label>Тойрог</label>
           <input type="number" id="mMatchday" value="1" min="1">
         </div>
+        <div class="field">
+          <label>Огноо, цаг (сонголт)</label>
+          <input type="datetime-local" id="mDateTime">
+        </div>
         <div class="field-row">
           <div class="field">
             <label>Гэрийн баг</label>
@@ -1589,6 +1581,8 @@ function renderAdminControls(view){
         return;
       }
       const matchday = parseInt(document.getElementById("mMatchday").value) || 1;
+      const dtVal = document.getElementById("mDateTime").value;
+      const matchAt = dtVal ? new Date(dtVal).toISOString() : null;
       const isPlayed = document.getElementById("mPlayed").checked;
       const homeScore = isPlayed ? (parseInt(document.getElementById("mHomeScore").value) || 0) : 0;
       const awayScore = isPlayed ? (parseInt(document.getElementById("mAwayScore").value) || 0) : 0;
@@ -1597,7 +1591,8 @@ function renderAdminControls(view){
         group_id: state.groupId, matchday,
         home_team_id: homeId, away_team_id: awayId,
         home_score: homeScore, away_score: awayScore,
-        played: isPlayed
+        played: isPlayed,
+        match_at: matchAt
       }).select().single();
 
       if(error){
@@ -1620,9 +1615,6 @@ function renderAdminControls(view){
   });
 }
 
-/* ============================================================
-   AUTH STATE + START
-   ============================================================ */
 sb.auth.onAuthStateChange((_event, sess) => {
   session = sess;
   renderAll();
