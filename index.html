@@ -787,7 +787,7 @@
   </div>
 
   <div class="fb-section">
-    <div class="totals-title">Deren Cup Facebook</div>
+    <div class="totals-title">Дерен цом Facebook</div>
     <div class="fb-card">
       <div class="fb-page"
         data-href="https://www.facebook.com/derencup/"
@@ -1553,15 +1553,26 @@ function renderAdminControls(view){
 
     const groupStageGroups = ageStageGroups();
     const alreadyHasPlayoff = RAW.groups.some(g => g.age_group_id === state.ageId && (g.stage||"group") === "playoff");
-    const allGroupStagePlayed = groupStageGroups.length === 2 && groupStageGroups.every(g => allMatchesPlayedForGroup(g.id));
+    const allGroupStagePlayed = (groupStageGroups.length === 2 || groupStageGroups.length === 4)
+      && groupStageGroups.every(g => allMatchesPlayedForGroup(g.id));
     if(allGroupStagePlayed && !alreadyHasPlayoff){
-      extraButtons += `<button class="btn-secondary" id="openCreatePlayoff">Финалын шат үүсгэх</button>`;
+      const label = groupStageGroups.length === 4
+        ? "Шигшээ шат (1/4 финал) үүсгэх"
+        : "Финалын шат үүсгэх";
+      extraButtons += `<button class="btn-secondary" id="openCreatePlayoff">${label}</button>`;
     }
   } else if(stage === "playoff"){
-    const semis = RAW.matches.filter(m => m.group_id === state.groupId && m.matchday === 1);
-    const finalExists = RAW.matches.some(m => m.group_id === state.groupId && m.matchday === 2);
-    const semisPlayedNoDraw = semis.length === 2 && semis.every(m => m.played && m.home_score !== m.away_score);
-    if(semisPlayedNoDraw && !finalExists){
+    const allPoMatches = RAW.matches.filter(m => m.group_id === state.groupId);
+    const byDay = {};
+    allPoMatches.forEach(m => { (byDay[m.matchday] ||= []).push(m); });
+    const days = Object.keys(byDay).map(Number).sort((a,b) => a-b);
+    const maxDay = days[days.length - 1];
+    const curRound = byDay[maxDay] || [];
+    const curRoundDone = curRound.length > 0 && curRound.every(m => m.played && m.home_score !== m.away_score);
+
+    if(curRoundDone && curRound.length === 4 && maxDay === 1){
+      extraButtons += `<button class="btn-secondary" id="openCreateSemis">Хагас финал үүсгэх</button>`;
+    } else if(curRoundDone && curRound.length === 2){
       extraButtons += `<button class="btn-secondary" id="openCreateFinal">Финал үүсгэх</button>`;
     }
   }
@@ -1601,41 +1612,128 @@ function renderAdminControls(view){
 
   document.getElementById("openCreatePlayoff")?.addEventListener("click", async () => {
     const groups = ageStageGroups();
-    if(groups.length !== 2){
-      alert("Автомат хослуулалт зөвхөн яг 2 хэсэгтэй үед л ажиллана.");
+
+    if(groups.length === 2){
+      const [g1, g2] = groups;
+      const st1 = computeStandings(groupView(g1.id));
+      const st2 = computeStandings(groupView(g2.id));
+      if(st1.length < 2 || st2.length < 2){
+        alert("Хэсэг тус бүрт хамгийн багадаа 2 баг байх шаардлагатай.");
+        return;
+      }
+      if(!confirm("Хагас финалын 2 тоглолт үүсгэх үү?\n" + st1[0].team + " (" + g1.name + " №1) — " + st2[1].team + " (" + g2.name + " №2)\n" + st2[0].team + " (" + g2.name + " №1) — " + st1[1].team + " (" + g1.name + " №2)")) return;
+
+      const { data: newGroup, error } = await sb.from("groups").insert({
+        age_group_id: state.ageId, code: "PO", name: "Финалын шат", stage: "playoff"
+      }).select().single();
+      if(error){ alert("Алдаа гарлаа: " + error.message); return; }
+
+      await sb.from("matches").insert([
+        { group_id: newGroup.id, matchday: 1, home_team_id: st1[0].teamId, away_team_id: st2[1].teamId, home_score:0, away_score:0, played:false },
+        { group_id: newGroup.id, matchday: 1, home_team_id: st2[0].teamId, away_team_id: st1[1].teamId, home_score:0, away_score:0, played:false },
+      ]);
+
+      state.groupId = newGroup.id;
+      await loadAll();
+      renderAll();
+
+    } else if(groups.length === 4){
+      const sorted = [...groups].sort((a,b) => (a.code || a.name).localeCompare(b.code || b.name));
+      const [gA, gB, gC, gD] = sorted;
+      const stA = computeStandings(groupView(gA.id));
+      const stB = computeStandings(groupView(gB.id));
+      const stC = computeStandings(groupView(gC.id));
+      const stD = computeStandings(groupView(gD.id));
+      if([stA, stB, stC, stD].some(s => s.length < 2)){
+        alert("Хэсэг тус бүрт хамгийн багадаа 2 баг байх шаардлагатай.");
+        return;
+      }
+      if(!confirm(
+        "Дөрвөн хэсгийн 1/4 финал (4 тоглолт) үүсгэх үү?\n" +
+        stA[0].team + " (" + gA.name + " №1) — " + stB[1].team + " (" + gB.name + " №2)\n" +
+        stB[0].team + " (" + gB.name + " №1) — " + stA[1].team + " (" + gA.name + " №2)\n" +
+        stC[0].team + " (" + gC.name + " №1) — " + stD[1].team + " (" + gD.name + " №2)\n" +
+        stD[0].team + " (" + gD.name + " №1) — " + stC[1].team + " (" + gC.name + " №2)"
+      )) return;
+
+      const { data: newGroup, error } = await sb.from("groups").insert({
+        age_group_id: state.ageId, code: "PO", name: "Шигшээ шат", stage: "playoff"
+      }).select().single();
+      if(error){ alert("Алдаа гарлаа: " + error.message); return; }
+
+      await sb.from("matches").insert([
+        { group_id: newGroup.id, matchday: 1, home_team_id: stA[0].teamId, away_team_id: stB[1].teamId, home_score:0, away_score:0, played:false },
+        { group_id: newGroup.id, matchday: 1, home_team_id: stB[0].teamId, away_team_id: stA[1].teamId, home_score:0, away_score:0, played:false },
+        { group_id: newGroup.id, matchday: 1, home_team_id: stC[0].teamId, away_team_id: stD[1].teamId, home_score:0, away_score:0, played:false },
+        { group_id: newGroup.id, matchday: 1, home_team_id: stD[0].teamId, away_team_id: stC[1].teamId, home_score:0, away_score:0, played:false },
+      ]);
+
+      state.groupId = newGroup.id;
+      await loadAll();
+      renderAll();
+
+    } else {
+      alert("Автомат хослуулалт зөвхөн 2 эсвэл 4 хэсэгтэй үед л ажиллана.");
+    }
+  });
+
+  document.getElementById("openCreateSemis")?.addEventListener("click", async () => {
+    const qfMatches = RAW.matches.filter(m => m.group_id === state.groupId && m.matchday === 1);
+    const groups = ageStageGroups();
+    const sorted = [...groups].sort((a,b) => (a.code || a.name).localeCompare(b.code || b.name));
+    if(sorted.length !== 4){
+      alert("Энэ функц зөвхөн 4 хэсэгтэй тохиолдолд ажиллана.");
       return;
     }
-    const [g1, g2] = groups;
-    const st1 = computeStandings(groupView(g1.id));
-    const st2 = computeStandings(groupView(g2.id));
-    if(st1.length < 2 || st2.length < 2){
-      alert("Хэсэг тус бүрт хамгийн багадаа 2 баг байх шаардлагатай.");
+    const [gA, gB, gC, gD] = sorted;
+    const stA = computeStandings(groupView(gA.id));
+    const stB = computeStandings(groupView(gB.id));
+    const stC = computeStandings(groupView(gC.id));
+    const stD = computeStandings(groupView(gD.id));
+
+    function findMatch(t1, t2){
+      return qfMatches.find(m =>
+        (m.home_team_id === t1 && m.away_team_id === t2) ||
+        (m.home_team_id === t2 && m.away_team_id === t1)
+      );
+    }
+    const winnerId = m => m.home_score > m.away_score ? m.home_team_id : m.away_team_id;
+
+    const qfAB = findMatch(stA[0].teamId, stB[1].teamId);
+    const qfBA = findMatch(stB[0].teamId, stA[1].teamId);
+    const qfCD = findMatch(stC[0].teamId, stD[1].teamId);
+    const qfDC = findMatch(stD[0].teamId, stC[1].teamId);
+
+    if(!qfAB || !qfBA || !qfCD || !qfDC){
+      alert("1/4 финалын тоглолтуудыг тодорхойлж чадсангүй — тоглолтуудыг гараар шалгана уу.");
       return;
     }
-    if(!confirm("Хагас финалын 2 тоглолт үүсгэх үү?\n" + st1[0].team + " (" + g1.name + " №1) — " + st2[1].team + " (" + g2.name + " №2)\n" + st2[0].team + " (" + g2.name + " №1) — " + st1[1].team + " (" + g1.name + " №2)")) return;
+    if(!confirm("Хагас финалын 2 тоглолт үүсгэх үү?\n" +
+      teamName(winnerId(qfAB)) + " — " + teamName(winnerId(qfCD)) + "\n" +
+      teamName(winnerId(qfBA)) + " — " + teamName(winnerId(qfDC))
+    )) return;
 
-    const { data: newGroup, error } = await sb.from("groups").insert({
-      age_group_id: state.ageId, code: "PO", name: "Финалын шат", stage: "playoff"
-    }).select().single();
-    if(error){ alert("Алдаа гарлаа: " + error.message); return; }
-
-    await sb.from("matches").insert([
-      { group_id: newGroup.id, matchday: 1, home_team_id: st1[0].teamId, away_team_id: st2[1].teamId, home_score:0, away_score:0, played:false },
-      { group_id: newGroup.id, matchday: 1, home_team_id: st2[0].teamId, away_team_id: st1[1].teamId, home_score:0, away_score:0, played:false },
+    const { error } = await sb.from("matches").insert([
+      { group_id: state.groupId, matchday: 2, home_team_id: winnerId(qfAB), away_team_id: winnerId(qfCD), home_score:0, away_score:0, played:false },
+      { group_id: state.groupId, matchday: 2, home_team_id: winnerId(qfBA), away_team_id: winnerId(qfDC), home_score:0, away_score:0, played:false },
     ]);
-
-    state.groupId = newGroup.id;
+    if(error){ alert("Алдаа гарлаа: " + error.message); return; }
     await loadAll();
     renderAll();
   });
 
   document.getElementById("openCreateFinal")?.addEventListener("click", async () => {
-    const semis = RAW.matches.filter(m => m.group_id === state.groupId && m.matchday === 1);
+    const allPoMatches = RAW.matches.filter(m => m.group_id === state.groupId);
+    const byDay = {};
+    allPoMatches.forEach(m => { (byDay[m.matchday] ||= []).push(m); });
+    const days = Object.keys(byDay).map(Number).sort((a,b) => a-b);
+    const maxDay = days[days.length - 1];
+    const semis = byDay[maxDay];
     const winnerId = m => m.home_score > m.away_score ? m.home_team_id : m.away_team_id;
     const finalists = semis.map(winnerId);
     if(!confirm("Финалын тоглолт үүсгэх үү?\n" + teamName(finalists[0]) + " — " + teamName(finalists[1]))) return;
     const { error } = await sb.from("matches").insert({
-      group_id: state.groupId, matchday: 2,
+      group_id: state.groupId, matchday: maxDay + 1,
       home_team_id: finalists[0], away_team_id: finalists[1],
       home_score: 0, away_score: 0, played: false
     });
