@@ -895,6 +895,38 @@ function currentGroupView(){
   return groupView(state.groupId);
 }
 
+// Тухайн насны ангиллын БҮХ хэсгийн (групп) багууд, тоглолтуудыг нэгтгэнэ —
+// насны ангиллын түвшний шилдэг тоглогчдын жагсаалтад ашиглана.
+function ageView(ageId){
+  const groupIds = RAW.groups.filter(g => g.age_group_id === ageId).map(g => g.id);
+  const teams = RAW.teams.filter(t => groupIds.includes(t.group_id));
+  const matches = RAW.matches
+    .filter(m => groupIds.includes(m.group_id))
+    .map(m => {
+      const scorers = RAW.goals
+        .filter(g => g.match_id === m.id)
+        .map(g => ({
+          side: g.team_id === m.home_team_id ? "home" : "away",
+          name: g.player_name,
+          goals: g.goal_count
+        }));
+      return {
+        id: m.id,
+        matchday: m.matchday,
+        home: teamName(m.home_team_id), away: teamName(m.away_team_id),
+        homeTeamId: m.home_team_id, awayTeamId: m.away_team_id,
+        homeScore: m.home_score, awayScore: m.away_score,
+        played: m.played,
+        matchAt: m.match_at,
+        scorers
+      };
+    });
+  return { teams, matches };
+}
+function currentAgeView(){
+  return ageView(state.ageId);
+}
+
 function ageStageGroups(){
   return RAW.groups.filter(g => g.age_group_id === state.ageId && (g.stage || "group") === "group");
 }
@@ -1283,7 +1315,7 @@ function renderScorers(view){
       <div class="scorer-goals">${p.goals}<small>гоол</small></div>`;
     wrap.appendChild(row);
   });
-  document.getElementById("scorersMeta").textContent = "Шилдэг " + top.length;
+  document.getElementById("scorersMeta").textContent = "Шилдэг " + top.length + " · " + (currentAgeGroup()?.label || "");
 }
 function renderTotalsBar(){
   const totalTeams = RAW.teams.length;
@@ -1307,7 +1339,7 @@ function renderAll(){
   renderTotalsBar();
   renderStandings(view);
   renderMatches(view);
-  renderScorers(view);
+  renderScorers(currentAgeView());
   renderAdminArea();
   renderGroupAdminControls();
   renderAdminControls(view);
